@@ -16,6 +16,7 @@ export default defineSchema({
   bins: defineTable({
     name: v.string(),
     userId: v.id("users"),
+    location: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_user", ["userId"]),
