@@ -11,11 +11,9 @@ import { useState } from "react";
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  type ChartConfig,
-} from "@/components/ui/chart"; // Importing ShadCN chart components
+} from "@/components/ui/chart";
 import {
   BarChart,
   Bar,
@@ -68,10 +66,19 @@ export default function DashboardPage() {
     convexUserId ? { userId: convexUserId } : "skip"
   );
 
+  const bins = useQuery(
+    api.bins.getUserBins,
+    convexUserId ? { userId: convexUserId } : "skip"
+  );
+
   const registerBin = useMutation(api.bins.registerBin);
+  const logCompost = useMutation(api.compost.logCompost);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
+
+  const [binName, setBinName] = useState("");
+  const [amount, setAmount] = useState<number | "">("");
 
   const handleRegister = async () => {
     if (!convexUserId) return;
@@ -84,6 +91,25 @@ export default function DashboardPage() {
 
     setName("");
     setLocation("");
+  };
+
+  const handleLogCompost = async () => {
+    if (!convexUserId || !binName || !amount) return;
+
+    const selectedBin = bins?.find((b) => b.name === binName);
+    if (!selectedBin) {
+      alert("Bin not found. Please register it first.");
+      return;
+    }
+
+    await logCompost({
+      binId: selectedBin._id,
+      userId: convexUserId,
+      amount: Number(amount),
+    });
+
+    setAmount("");
+    setBinName("");
   };
 
   const formattedReimbursementsData =
@@ -159,7 +185,6 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Reimbursement Chart */}
       <Card>
         <CardHeader>
           <CardTitle>Reimbursements Over Time</CardTitle>
@@ -195,7 +220,6 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Bin Registration */}
       <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle>Add a New Bin</CardTitle>
@@ -203,18 +227,20 @@ export default function DashboardPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label>Name</Label>
+              <Label className="mb-2">Name</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="bg-background"
                 placeholder="Bin name"
               />
             </div>
             <div>
-              <Label>Location</Label>
+              <Label className="mb-2">Location</Label>
               <Input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                className="bg-background"
                 placeholder="Bin location"
               />
             </div>
@@ -222,6 +248,45 @@ export default function DashboardPage() {
           <Button className="mt-4" onClick={handleRegister}>
             Register Bin
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Compost Logging */}
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Log Compost</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <Label className="mb-2">Bin</Label>
+              <select
+                value={binName}
+                onChange={(e) => setBinName(e.target.value)}
+                className="w-full border rounded p-2 bg-background ring-offset-background"
+              >
+                <option value="">Select Bin</option>
+                {bins?.map((bin) => (
+                  <option key={bin._id} value={bin.name}>
+                    {bin.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="mb-2">Amount (kg)</Label>
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+                className="bg-background"
+                placeholder="Amount of compost"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button onClick={handleLogCompost}>Log Compost</Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

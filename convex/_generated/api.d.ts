@@ -16,7 +16,6 @@ import type {
 import type * as analytics from "../analytics.js";
 import type * as bins from "../bins.js";
 import type * as compost from "../compost.js";
-import type * as cron from "../cron.js";
 import type * as http from "../http.js";
 import type * as reimbursements from "../reimbursements.js";
 import type * as users from "../users.js";
@@ -33,7 +32,6 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   bins: typeof bins;
   compost: typeof compost;
-  cron: typeof cron;
   http: typeof http;
   reimbursements: typeof reimbursements;
   users: typeof users;

@@ -1,12 +1,33 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
 
-const calculateReimbursement = (compostKg: number): number => {
-  if (compostKg >= 20) return 500;
-  if (compostKg >= 10) return 300;
-  return 100;
-};
+export const getUserReimbursements = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return ctx.db
+      .query("reimbursements")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const updateReimbursementStatus = mutation({
+  args: {
+    reimbursementId: v.id("reimbursements"),
+    status: v.union(
+      v.literal("PENDING"),
+      v.literal("PAID"),
+      v.literal("FAILED")
+    ),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.patch(args.reimbursementId, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
+  },
+});
 
 export const processMonthlyReimbursement = mutation({
   args: {
@@ -15,29 +36,25 @@ export const processMonthlyReimbursement = mutation({
     month: v.number(),
   },
   handler: async (ctx, args) => {
-    const compostTotal = await ctx.runQuery(
-      api.compost.getMonthlyCompost,
-      args
-    );
-    const amount = calculateReimbursement(compostTotal);
+    const period = `${args.year}-${args.month.toString().padStart(2, "0")}`;
+
+    const existingReimbursement = await ctx.db
+      .query("reimbursements")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("period"), period))
+      .first();
+
+    if (existingReimbursement) {
+      return existingReimbursement._id;
+    }
 
     return ctx.db.insert("reimbursements", {
       userId: args.userId,
-      amount,
+      amount: 0,
       status: "PENDING",
-      period: `${args.year}-${args.month.toString().padStart(2, "0")}`,
+      period,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
-  },
-});
-
-export const getUserReimbursements = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
-    return ctx.db
-      .query("reimbursements")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .collect();
   },
 });
