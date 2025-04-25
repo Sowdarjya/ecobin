@@ -245,7 +245,7 @@ export default function DashboardPage() {
               />
             </div>
           </div>
-          <Button className="mt-4" onClick={handleRegister}>
+          <Button className="mt-4 cursor-pointer" onClick={handleRegister}>
             Register Bin
           </Button>
         </CardContent>
@@ -284,7 +284,9 @@ export default function DashboardPage() {
               />
             </div>
             <div className="flex items-end">
-              <Button onClick={handleLogCompost}>Log Compost</Button>
+              <Button onClick={handleLogCompost} className="cursor-pointer">
+                Log Compost
+              </Button>
             </div>
           </div>
         </CardContent>

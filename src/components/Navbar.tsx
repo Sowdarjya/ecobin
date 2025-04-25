@@ -25,7 +25,6 @@ const Navbar = () => {
               {isSignedIn ? (
                 <>
                   <Link href="/dashboard">Dashboard</Link>
-                  <Link href="/profile">Profile</Link>
                   <SignOutButton>
                     <Button variant="outline" className="hover:cursor-pointer">
                       Log out
@@ -54,19 +53,22 @@ const Navbar = () => {
                     <AlignRight className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right">
+                <SheetContent side="right" className="px-5">
                   <div className="flex flex-col gap-4 mt-8">
                     {isSignedIn ? (
                       <>
-                        <Link href="/post">Create Post</Link>
-                        <Link href="/profile">Profile</Link>
+                        <Link href="/dashboard" className="text-center">
+                          Dashboard
+                        </Link>
                         <SignOutButton>
-                          <Button variant="outline">Log out</Button>
+                          <Button variant="outline" className="cursor-pointer">
+                            Log out
+                          </Button>
                         </SignOutButton>
                       </>
                     ) : (
                       <SignInButton mode="modal">
-                        <Button>Sign in</Button>
+                        <Button className="cursor-pointer">Sign in</Button>
                       </SignInButton>
                     )}
                   </div>
